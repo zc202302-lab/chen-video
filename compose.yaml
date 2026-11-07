@@ -1,0 +1,42 @@
+name: chen-video
+services:
+  jellyfin:
+    image: ${JELLYFIN_IMAGE:?Set JELLYFIN_IMAGE in .env}
+    user: "${PUID:?Set PUID}:${PGID:?Set PGID}"
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - "127.0.0.1:8096:8096"
+    volumes:
+      - ${DATA_ROOT:?Set DATA_ROOT}/config:/config
+      - ${DATA_ROOT}/cache:/cache
+      - ${DATA_ROOT}/media:/media:ro
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  caddy:
+    image: ${CADDY_IMAGE:?Set CADDY_IMAGE in .env}
+    profiles: [https]
+    restart: unless-stopped
+    environment:
+      MEDIA_DOMAIN: ${MEDIA_DOMAIN:?Set MEDIA_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${DATA_ROOT}/caddy/data:/data
+      - ${DATA_ROOT}/caddy/config:/config
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

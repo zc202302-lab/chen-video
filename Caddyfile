@@ -1,0 +1,12 @@
+{
+    email {$ACME_EMAIL}
+}
+{$MEDIA_DOMAIN} {
+    encode zstd gzip
+    reverse_proxy jellyfin:8096
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy no-referrer
+    }
+    # Access logging intentionally disabled: URLs can contain media access tokens.
+}
